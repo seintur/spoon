@@ -51,20 +51,7 @@ import spoon.reflect.code.CtFieldAccess;
 import spoon.reflect.code.CtLambda;
 import spoon.reflect.code.CtTypeAccess;
 import spoon.reflect.code.CtVariableAccess;
-import spoon.reflect.declaration.CtClass;
-import spoon.reflect.declaration.CtExecutable;
-import spoon.reflect.declaration.CtField;
-import spoon.reflect.declaration.CtInterface;
-import spoon.reflect.declaration.CtModule;
-import spoon.reflect.declaration.CtModuleRequirement;
-import spoon.reflect.declaration.CtPackageExport;
-import spoon.reflect.declaration.CtParameter;
-import spoon.reflect.declaration.CtProvidedService;
-import spoon.reflect.declaration.CtReceiverParameter;
-import spoon.reflect.declaration.CtSealable;
-import spoon.reflect.declaration.CtType;
-import spoon.reflect.declaration.CtUsedService;
-import spoon.reflect.declaration.CtVariable;
+import spoon.reflect.declaration.*;
 import spoon.reflect.factory.CoreFactory;
 import spoon.reflect.reference.CtArrayTypeReference;
 import spoon.reflect.reference.CtExecutableReference;
@@ -816,7 +803,40 @@ public class JDTTreeBuilderHelper {
 			type = jdtTreeBuilder.getFactory().Core().createInterface();
 		} else if (typeDeclaration.isRecord()) {
 			type = jdtTreeBuilder.getFactory().Core().createRecord();
-		}	else {
+
+            /*
+             * Starting with version 3.42.0, JDT no longer adds in the AST, neither fields, nor the default canonical
+             * constructor for records. Add them in the Spoon model.
+             */
+            // Implicit members are added at index 0, preserve ordering in type by going from last to first
+            for (int i=typeDeclaration.binding.fieldCount()-1; i >= 0; i-- ) {
+                FieldBinding fieldBinding = typeDeclaration.binding.fields()[i];
+                if( fieldBinding.isRecordComponent() ) {
+                    CtField<?> field = type.getFactory().createField();
+                    field.setImplicit(true);
+                    field.addModifier(ModifierKind.PRIVATE);
+                    field.addModifier(ModifierKind.FINAL);
+                    field.setType(jdtTreeBuilder.references.getTypeReference(fieldBinding.type));
+                    field.setSimpleName(new String(fieldBinding.name));
+                    type.addField(field);
+                }
+            }
+
+            CtConstructor<?> canonicalConstructor = type.getFactory().createConstructor();
+            canonicalConstructor.setImplicit(true);
+            canonicalConstructor.addModifier(ModifierKind.PUBLIC);
+            for (FieldBinding fieldBinding : typeDeclaration.binding.fields()) {
+                if( fieldBinding.isRecordComponent() ) {
+                    CtParameter<?> parameter = type.getFactory().createParameter();
+                    // TODO Handle annotations on parameter
+                    parameter.setType(jdtTreeBuilder.references.getTypeReference(fieldBinding.type));
+                    parameter.setSimpleName(new String(fieldBinding.name));
+                    canonicalConstructor.addParameter(parameter);
+                }
+            }
+            type.addTypeMember(canonicalConstructor);
+
+        }	else {
 			type = jdtTreeBuilder.getFactory().Core().createClass();
 		}
 
