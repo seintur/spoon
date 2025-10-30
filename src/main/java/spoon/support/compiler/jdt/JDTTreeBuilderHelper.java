@@ -31,6 +31,8 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.ast.UnionTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.UsesStatement;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
+import org.eclipse.jdt.internal.compiler.lookup.ElementValuePair;
 import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
 import org.eclipse.jdt.internal.compiler.lookup.LocalTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MissingTypeBinding;
@@ -65,6 +67,7 @@ import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.support.reflect.CtExtendedModifier;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -816,6 +819,11 @@ public class JDTTreeBuilderHelper {
                     field.setImplicit(true);
                     field.addModifier(ModifierKind.PRIVATE);
                     field.addModifier(ModifierKind.FINAL);
+                    AnnotationBinding[] annotationBindings = fieldBinding.getAnnotations();
+                    for (AnnotationBinding annotationBinding : annotationBindings) {
+                        CtAnnotation<? extends Annotation> annotation = getAnnotation(annotationBinding);
+                        field.addAnnotation(annotation);
+                    }
                     field.setType(jdtTreeBuilder.references.getTypeReference(fieldBinding.type));
                     field.setSimpleName(new String(fieldBinding.name));
                     type.addField(field);
@@ -828,7 +836,10 @@ public class JDTTreeBuilderHelper {
             for (FieldBinding fieldBinding : typeDeclaration.binding.fields()) {
                 if( fieldBinding.isRecordComponent() ) {
                     CtParameter<?> parameter = type.getFactory().createParameter();
-                    // TODO Handle annotations on parameter
+                    for (AnnotationBinding annotationBinding : fieldBinding.getAnnotations()) {
+                        CtAnnotation<? extends Annotation> annotation = getAnnotation(annotationBinding);
+                        parameter.addAnnotation(annotation);
+                    }
                     parameter.setType(jdtTreeBuilder.references.getTypeReference(fieldBinding.type));
                     parameter.setSimpleName(new String(fieldBinding.name));
                     canonicalConstructor.addParameter(parameter);
@@ -891,7 +902,15 @@ public class JDTTreeBuilderHelper {
 		return type;
 	}
 
-	/**
+    private CtAnnotation<? extends java.lang.annotation.Annotation> getAnnotation(AnnotationBinding binding) {
+        CtAnnotation<? extends java.lang.annotation.Annotation> annotation = jdtTreeBuilder.getFactory().Core().createAnnotation();
+        CtTypeReference annotationType = jdtTreeBuilder.references.getTypeReference(binding.getAnnotationType());
+        annotation.setAnnotationType(annotationType);
+        // TODO handle elementValuePairs
+        return annotation;
+    }
+
+    /**
 	 * Creates an entire object CtModule from a module declaration.
 	 * @return a CtModule
 	 */
