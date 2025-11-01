@@ -806,47 +806,7 @@ public class JDTTreeBuilderHelper {
 			type = jdtTreeBuilder.getFactory().Core().createInterface();
 		} else if (typeDeclaration.isRecord()) {
 			type = jdtTreeBuilder.getFactory().Core().createRecord();
-
-            /*
-             * Starting with version 3.42.0, JDT no longer adds in the AST, neither fields, nor the default canonical
-             * constructor for records. Add them in the Spoon model.
-             */
-            // Implicit members are added at index 0, preserve ordering in type by going from last to first
-            for (int i=typeDeclaration.binding.fieldCount()-1; i >= 0; i-- ) {
-                FieldBinding fieldBinding = typeDeclaration.binding.fields()[i];
-                if( fieldBinding.isRecordComponent() ) {
-                    CtField<?> field = type.getFactory().createField();
-                    field.setImplicit(true);
-                    field.addModifier(ModifierKind.PRIVATE);
-                    field.addModifier(ModifierKind.FINAL);
-                    AnnotationBinding[] annotationBindings = fieldBinding.getAnnotations();
-                    for (AnnotationBinding annotationBinding : annotationBindings) {
-                        CtAnnotation<? extends Annotation> annotation = getAnnotation(annotationBinding);
-                        field.addAnnotation(annotation);
-                    }
-                    field.setType(jdtTreeBuilder.references.getTypeReference(fieldBinding.type));
-                    field.setSimpleName(new String(fieldBinding.name));
-                    type.addField(field);
-                }
-            }
-
-            CtConstructor<?> canonicalConstructor = type.getFactory().createConstructor();
-            canonicalConstructor.setImplicit(true);
-            canonicalConstructor.addModifier(ModifierKind.PUBLIC);
-            for (FieldBinding fieldBinding : typeDeclaration.binding.fields()) {
-                if( fieldBinding.isRecordComponent() ) {
-                    CtParameter<?> parameter = type.getFactory().createParameter();
-                    for (AnnotationBinding annotationBinding : fieldBinding.getAnnotations()) {
-                        CtAnnotation<? extends Annotation> annotation = getAnnotation(annotationBinding);
-                        parameter.addAnnotation(annotation);
-                    }
-                    parameter.setType(jdtTreeBuilder.references.getTypeReference(fieldBinding.type));
-                    parameter.setSimpleName(new String(fieldBinding.name));
-                    canonicalConstructor.addParameter(parameter);
-                }
-            }
-            type.addTypeMember(canonicalConstructor);
-
+            addFieldsAndCanonicalConstructor((CtRecord)type, typeDeclaration);
         }	else {
 			type = jdtTreeBuilder.getFactory().Core().createClass();
 		}
@@ -902,12 +862,60 @@ public class JDTTreeBuilderHelper {
 		return type;
 	}
 
-    private CtAnnotation<? extends java.lang.annotation.Annotation> getAnnotation(AnnotationBinding binding) {
-        CtAnnotation<? extends java.lang.annotation.Annotation> annotation = jdtTreeBuilder.getFactory().Core().createAnnotation();
-        CtTypeReference annotationType = jdtTreeBuilder.references.getTypeReference(binding.getAnnotationType());
-        annotation.setAnnotationType(annotationType);
-        // TODO handle elementValuePairs
-        return annotation;
+    /**
+     * Add fields and the canonical constructor to the specified record.
+     */
+    private void addFieldsAndCanonicalConstructor(CtRecord record, TypeDeclaration typeDeclaration) {
+
+        /*
+         * Starting with version 3.42.0, JDT no longer adds in the AST, neither fields, nor the default canonical
+         * constructor for records.
+         */
+
+        // Implicit members are added at index 0, preserve ordering in type by going from last to first
+        for (int i = typeDeclaration.binding.fieldCount() - 1; i >= 0; i--) {
+            FieldBinding fieldBinding = typeDeclaration.binding.fields()[i];
+            if (fieldBinding.isRecordComponent()) {
+                CtField<?> field = record.getFactory().createField();
+                field.setImplicit(true);
+                field.addModifier(ModifierKind.PRIVATE);
+                field.addModifier(ModifierKind.FINAL);
+                AnnotationBinding[] annotationBindings = fieldBinding.getAnnotations();
+                for (AnnotationBinding annotationBinding : annotationBindings) {
+                    addAnnotation(field, annotationBinding);
+                }
+                field.setType(jdtTreeBuilder.references.getTypeReference(fieldBinding.type));
+                field.setSimpleName(new String(fieldBinding.name));
+                record.addField(field);
+            }
+        }
+
+        CtConstructor<?> canonicalConstructor = record.getFactory().createConstructor();
+        canonicalConstructor.setImplicit(true);
+        canonicalConstructor.addModifier(ModifierKind.PUBLIC);
+        for (FieldBinding fieldBinding : typeDeclaration.binding.fields()) {
+            if (fieldBinding.isRecordComponent()) {
+                CtParameter<?> parameter = record.getFactory().createParameter();
+                for (AnnotationBinding annotationBinding : fieldBinding.getAnnotations()) {
+                    addAnnotation(parameter, annotationBinding);
+                }
+                parameter.setType(jdtTreeBuilder.references.getTypeReference(fieldBinding.type));
+                parameter.setSimpleName(new String(fieldBinding.name));
+                canonicalConstructor.addParameter(parameter);
+            }
+        }
+        record.addTypeMember(canonicalConstructor);
+    }
+
+    private void addAnnotation(CtElement field, AnnotationBinding binding) {
+        ReferenceBinding referenceBinding = binding.getAnnotationType();
+        if (!(referenceBinding instanceof MissingTypeBinding)) {
+            CtAnnotation<? extends java.lang.annotation.Annotation> annotation = jdtTreeBuilder.getFactory().Core().createAnnotation();
+            CtTypeReference annotationType = jdtTreeBuilder.references.getTypeReference(referenceBinding);
+            annotation.setAnnotationType(annotationType);
+            field.addAnnotation(annotation);
+            // TODO handle binding.getElementValuePairs()
+        }
     }
 
     /**
