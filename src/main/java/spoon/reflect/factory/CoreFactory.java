@@ -537,6 +537,11 @@ public interface CoreFactory {
 	CtJavaDoc createJavaDoc();
 
 	/**
+	 * Creates a Markdown comment.
+	 */
+	CtJavaDoc createMarkdownComment();
+
+	/**
 	 * Creates a javadoc tag.
 	 */
 	CtJavaDocTag createJavaDocTag();

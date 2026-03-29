@@ -22,7 +22,6 @@ import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
 import org.junit.jupiter.api.extension.ExtendWith;
 import spoon.Launcher;
-import spoon.LauncherTest;
 import spoon.SpoonException;
 import spoon.reflect.CtModel;
 import spoon.reflect.code.CtArrayAccess;
@@ -83,6 +82,7 @@ import spoon.test.comment.testclasses.InlineComment;
 import spoon.test.comment.testclasses.JavaDocComment;
 import spoon.test.comment.testclasses.JavaDocEmptyCommentAndTags;
 import spoon.test.comment.testclasses.JavaDocWithLink;
+import spoon.test.comment.testclasses.MarkdownComment;
 import spoon.test.comment.testclasses.OtherJavaDoc;
 import spoon.test.comment.testclasses.TestClassWithComments;
 import spoon.test.comment.testclasses.WildComments;
@@ -309,11 +309,18 @@ public class CommentTest {
 	}
 
 	@Test
+	void testJavadocMarkdownComment() {
+		Factory f = getSpoonFactory();
+		CtClass<?> type = (CtClass<?>) f.Type().get(MarkdownComment.class);
+		System.out.println(type);
+	}
+
+	@Test
 	public void testInLineComment() {
 		Factory f = getSpoonFactory();
 		CtClass<?> type = (CtClass<?>) f.Type().get(InlineComment.class);
 		String strType = type.toString();
-		
+
 		List<CtComment> compilationUnitComments = type.getPosition().getCompilationUnit().getComments();
 		assertEquals(2, compilationUnitComments.size());
 		assertEquals(CtComment.CommentType.BLOCK, compilationUnitComments.get(0).getCommentType());
@@ -511,7 +518,7 @@ public class CommentTest {
 		Factory f = getSpoonFactory();
 		CtClass<?> type = (CtClass<?>) f.Type().get(BlockComment.class);
 		String strType = type.toString();
-		
+
 		List<CtComment> compilationUnitComments = type.getPosition().getCompilationUnit().getComments();
 		assertEquals(2, compilationUnitComments.size());
 		assertEquals("Bottom File", compilationUnitComments.get(1).getContent());
@@ -879,14 +886,14 @@ public class CommentTest {
 	@ExtendWith(LineSeparatorExtension.class)
 	public void testDocumentationContract() throws Exception {
 		// contract: all metamodel classes must be commented with an example.
-		
+
 		final Launcher launcher = new Launcher();
 		launcher.getEnvironment().setNoClasspath(true);
 		launcher.getEnvironment().setCommentEnabled(true);
 
 		launcher.getEnvironment().setComplianceLevel(22);
 		// launcher.getEnvironment().setPreviewFeaturesEnabled(true);
-		
+
 		// interfaces.
 		launcher.addInputResource("./src/main/java/spoon/reflect/");
 		launcher.addInputResource("./src/main/java/spoon/support/reflect/");
@@ -1161,19 +1168,19 @@ public class CommentTest {
 	public void testCommentGetRawContent(Launcher launcher) {
 		CtClass<?> type = (CtClass<?>) launcher.getFactory().Type().get("spoon.test.comment.testclasses.JavaDocComment");
 		//contract: getContent always returns cleaned comment content with \n as EOL
-		assertEquals("JavaDoc test class.\n" + 
-				"\n" + 
+		assertEquals("JavaDoc test class.\n" +
+				"\n" +
 				"Long description", type.getComments().get(0).getContent());
 		// contract: return the full original comment with prefix and suffix, incl. the original EOL (\r as EOL here)
-		assertEquals("/**\r" + 
-				" * JavaDoc test class.\r" + 
-				" *\r" + 
-				" * Long description\r" + 
-				" *\r" + 
-				" * @deprecated\r" + 
-				" * @since 1.3\r" + 
-				" * @author Thomas Durieux\r" + 
-				" * @version 1.0\r" + 
+		assertEquals("/**\r" +
+				" * JavaDoc test class.\r" +
+				" *\r" +
+				" * Long description\r" +
+				" *\r" +
+				" * @deprecated\r" +
+				" * @since 1.3\r" +
+				" * @author Thomas Durieux\r" +
+				" * @version 1.0\r" +
 				" */", type.getComments().get(0).getRawContent());
 	}
 

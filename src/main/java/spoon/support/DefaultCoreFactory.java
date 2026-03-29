@@ -750,6 +750,14 @@ public class DefaultCoreFactory extends SubFactory implements CoreFactory {
 	}
 
 	@Override
+	public CtJavaDoc createMarkdownComment() {
+		CtJavaDoc e = new CtJavaDocImpl();
+		e.setCommentType(CtComment.CommentType.MARKDOWN);
+		e.setFactory(getMainFactory());
+		return e;
+	}
+
+	@Override
 	public CtJavaDocTag createJavaDocTag() {
 		CtJavaDocTag e = new CtJavaDocTagImpl();
 		e.setFactory(getMainFactory());

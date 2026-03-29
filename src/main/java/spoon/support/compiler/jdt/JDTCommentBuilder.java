@@ -105,6 +105,9 @@ public class JDTCommentBuilder {
 	 * Start the build process
 	 */
 	public void build() {
+		if (declarationUnit.types[0].name[0] == 'M') {
+			System.out.println();
+		}
 		if (declarationUnit.comments == null) {
 			return;
 		}
@@ -126,7 +129,7 @@ public class JDTCommentBuilder {
 
 		// Javadoc comments have negative end position
 		if (end <= 0) {
-			comment = factory.Core().createJavaDoc();
+			comment = contents[start+1] == '/' ? factory.Core().createMarkdownComment() : factory.Core().createJavaDoc();
 			end = -end;
 		} else {
 			comment = factory.Core().createComment();
