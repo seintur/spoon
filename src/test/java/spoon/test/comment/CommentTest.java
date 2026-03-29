@@ -82,11 +82,11 @@ import spoon.test.comment.testclasses.InlineComment;
 import spoon.test.comment.testclasses.JavaDocComment;
 import spoon.test.comment.testclasses.JavaDocEmptyCommentAndTags;
 import spoon.test.comment.testclasses.JavaDocWithLink;
-import spoon.test.comment.testclasses.MarkdownComment;
 import spoon.test.comment.testclasses.OtherJavaDoc;
 import spoon.test.comment.testclasses.TestClassWithComments;
 import spoon.test.comment.testclasses.WildComments;
 import spoon.test.comment.testclasses.WindowsEOL;
+import spoon.testing.utils.BySimpleName;
 import spoon.testing.utils.GitHubIssue;
 import spoon.testing.utils.LineSeparatorExtension;
 import spoon.testing.utils.ModelTest;
@@ -308,11 +308,28 @@ public class CommentTest {
 		assertEquals(5, type.getComments().size() +  + compilationUnitComments.size());
 	}
 
-	@Test
-	void testJavadocMarkdownComment() {
-		Factory f = getSpoonFactory();
-		CtClass<?> type = (CtClass<?>) f.Type().get(MarkdownComment.class);
-		System.out.println(type);
+	@ModelTest(code = """
+		class MarkdownComment {
+
+			/**
+			 * A legacy Javadoc comment.
+			 * <p>
+			 * @param i  an integer
+			 */
+			int next(int i) {
+				return i+1;
+			}
+
+			///A Markdown comment
+			///
+			///@param i an integer
+			/// @return	the previous integer
+			int previous(int i) {
+				return i-1;
+			}
+		}""", complianceLevel = 23)
+	void testJavadocMarkdownComment(@BySimpleName("MarkdownComment") CtClass<?> cl) {
+		System.out.println(cl);
 	}
 
 	@Test
