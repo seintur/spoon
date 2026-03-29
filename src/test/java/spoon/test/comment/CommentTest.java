@@ -320,7 +320,7 @@ public class CommentTest {
 				return i+1;
 			}
 
-			///A Markdown comment
+			/// A Markdown comment
 			///
 			///@param i an integer
 			/// @return	the previous integer

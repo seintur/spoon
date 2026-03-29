@@ -126,7 +126,7 @@ public class JDTCommentBuilder {
 
 		// Javadoc comments have negative end position
 		if (end <= 0) {
-			if (contents[start+1] == '/') {
+			if (contents[start] == '/' && contents[start+1] == '/' && contents[start+2] == '/') {
 				comment = factory.Core().createMarkdownComment();
 				start++;
 			}
