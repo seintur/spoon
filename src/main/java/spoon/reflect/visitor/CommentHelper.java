@@ -79,7 +79,7 @@ public class CommentHelper {
 				// per line suffix
 					printCommentContent(printer, comment, s -> (" * " + s).replaceAll(" *$", ""));
 			case MARKDOWN ->
-				printCommentContent(printer, comment, s -> s);
+				printer.write(content);
 		}
 		// suffix
 		switch (commentType) {
