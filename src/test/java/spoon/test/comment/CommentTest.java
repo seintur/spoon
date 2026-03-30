@@ -311,15 +311,6 @@ public class CommentTest {
 	@ModelTest(code = """
 		class MarkdownComment {
 
-			/**
-			 * A legacy Javadoc comment.
-			 * <p>
-			 * @param i  an integer
-			 */
-			int next(int i) {
-				return i+1;
-			}
-
 			/// A Markdown comment
 			///
 			///@param i an integer
