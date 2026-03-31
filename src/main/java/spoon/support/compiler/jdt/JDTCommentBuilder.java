@@ -126,7 +126,16 @@ public class JDTCommentBuilder {
 
 		// Javadoc comments have negative end position
 		if (end <= 0) {
-			comment = factory.Core().createJavaDoc();
+			// Prior to 23 /// starting lines are not considered as Markdown comments
+			if (factory.getEnvironment().getComplianceLevel() >= 23
+				&& contents[start+1] == '/'
+				&& contents[start+2] == '/') {
+				comment = factory.Core().createMarkdownComment();
+				start += 3;
+			}
+			else {
+				comment = factory.Core().createJavaDoc();
+			}
 			end = -end;
 		} else {
 			comment = factory.Core().createComment();
