@@ -34,6 +34,10 @@ public interface CtComment extends CtStatement {
 		 */
 		JAVADOC,
 		/**
+		 * Markdown documentation comment as defined by JEP 467
+		 */
+		MARKDOWN,
+		/**
 		 * Inline comment (//)
 		 */
 		INLINE,

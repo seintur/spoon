@@ -46,6 +46,9 @@ public class CommentHelper {
 		case JAVADOC:
 			printer.write(DefaultJavaPrettyPrinter.JAVADOC_START).writeln();
 			break;
+		case MARKDOWN:
+			printer.write(DefaultJavaPrettyPrinter.MARKDOWN_START);
+			break;
 		case INLINE:
 			printer.write(DefaultJavaPrettyPrinter.INLINE_COMMENT_START);
 			break;
@@ -75,6 +78,8 @@ public class CommentHelper {
 			case JAVADOC ->
 				// per line suffix
 					printCommentContent(printer, comment, s -> (" * " + s).replaceAll(" *$", ""));
+			case MARKDOWN ->
+				printer.write(content);
 		}
 		// suffix
 		switch (commentType) {

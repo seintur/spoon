@@ -118,6 +118,17 @@ public class CommentTest {
 
 	private String newLine = System.getProperty("line.separator");
 
+	private Factory getSpoonFactory(int complianceLevel) {
+		final Launcher launcher = new Launcher();
+		launcher.run(new String[]{
+			"--compliance", Integer.toString(complianceLevel),
+			"-i", "./src/test/java/spoon/test/comment/testclasses/",
+			"-o", "./target/spooned/",
+			"-c"
+		});
+		return launcher.getFactory();
+	}
+
 	private Factory getSpoonFactory() {
 		final Launcher launcher = new Launcher();
 		launcher.run(new String[]{
@@ -313,7 +324,7 @@ public class CommentTest {
 		Factory f = getSpoonFactory();
 		CtClass<?> type = (CtClass<?>) f.Type().get(InlineComment.class);
 		String strType = type.toString();
-		
+
 		List<CtComment> compilationUnitComments = type.getPosition().getCompilationUnit().getComments();
 		assertEquals(2, compilationUnitComments.size());
 		assertEquals(CtComment.CommentType.BLOCK, compilationUnitComments.get(0).getCommentType());
@@ -511,7 +522,7 @@ public class CommentTest {
 		Factory f = getSpoonFactory();
 		CtClass<?> type = (CtClass<?>) f.Type().get(BlockComment.class);
 		String strType = type.toString();
-		
+
 		List<CtComment> compilationUnitComments = type.getPosition().getCompilationUnit().getComments();
 		assertEquals(2, compilationUnitComments.size());
 		assertEquals("Bottom File", compilationUnitComments.get(1).getContent());
@@ -879,14 +890,14 @@ public class CommentTest {
 	@ExtendWith(LineSeparatorExtension.class)
 	public void testDocumentationContract() throws Exception {
 		// contract: all metamodel classes must be commented with an example.
-		
+
 		final Launcher launcher = new Launcher();
 		launcher.getEnvironment().setNoClasspath(true);
 		launcher.getEnvironment().setCommentEnabled(true);
 
 		launcher.getEnvironment().setComplianceLevel(22);
 		// launcher.getEnvironment().setPreviewFeaturesEnabled(true);
-		
+
 		// interfaces.
 		launcher.addInputResource("./src/main/java/spoon/reflect/");
 		launcher.addInputResource("./src/main/java/spoon/support/reflect/");
@@ -1055,7 +1066,7 @@ public class CommentTest {
 	@Test
 	public void testWildComments() {
 		//contract: tests that value of comment is correct even for wild combinations of characters. See WildComments class for details
-		Factory f = getSpoonFactory();
+		Factory f = getSpoonFactory(22);
 		CtClass<?> type = (CtClass<?>) f.Type().get(WildComments.class);
 		List<CtLiteral<String>> literals = (List) ((CtNewArray<?>) type.getField("comments").getDefaultExpression()).getElements();
 		assertTrue(literals.size() > 10);
@@ -1161,19 +1172,19 @@ public class CommentTest {
 	public void testCommentGetRawContent(Launcher launcher) {
 		CtClass<?> type = (CtClass<?>) launcher.getFactory().Type().get("spoon.test.comment.testclasses.JavaDocComment");
 		//contract: getContent always returns cleaned comment content with \n as EOL
-		assertEquals("JavaDoc test class.\n" + 
-				"\n" + 
+		assertEquals("JavaDoc test class.\n" +
+				"\n" +
 				"Long description", type.getComments().get(0).getContent());
 		// contract: return the full original comment with prefix and suffix, incl. the original EOL (\r as EOL here)
-		assertEquals("/**\r" + 
-				" * JavaDoc test class.\r" + 
-				" *\r" + 
-				" * Long description\r" + 
-				" *\r" + 
-				" * @deprecated\r" + 
-				" * @since 1.3\r" + 
-				" * @author Thomas Durieux\r" + 
-				" * @version 1.0\r" + 
+		assertEquals("/**\r" +
+				" * JavaDoc test class.\r" +
+				" *\r" +
+				" * Long description\r" +
+				" *\r" +
+				" * @deprecated\r" +
+				" * @since 1.3\r" +
+				" * @author Thomas Durieux\r" +
+				" * @version 1.0\r" +
 				" */", type.getComments().get(0).getRawContent());
 	}
 
