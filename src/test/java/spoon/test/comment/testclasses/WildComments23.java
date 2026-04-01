@@ -56,7 +56,7 @@ public class WildComments23 {
 			 *
 			 *
 			 * of the comment!
-			 *  this line keeps prefix and trailing space
+			 *  this line keeps prefix and trailing space 
 			 * 	but it was not last line, whose trailing space is ignored
 			 *
 			 */
