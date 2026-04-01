@@ -132,7 +132,6 @@ public class JDTCommentBuilder {
 				&& contents[start+1] == '/'
 				&& contents[start+2] == '/') {
 				comment = factory.Core().createMarkdownComment();
-				start++;
 			}
 			else {
 				comment = factory.Core().createJavaDoc();
@@ -619,18 +618,18 @@ public class JDTCommentBuilder {
 		return new String(contents, start, end - start);
 	}
 
-	public static String cleanComment(String comment) {
+	public static String cleanComment(String comment, int complianceLevel) {
 		if (comment == null) {
 			return "";
 		}
-		return cleanComment(new StringReader(comment));
+		return cleanComment(new StringReader(comment), complianceLevel);
 	}
 
 	private static final Pattern startCommentRE = Pattern.compile("^/\\*{1,2} ?");
 	private static final Pattern middleCommentRE = Pattern.compile("^[ \t]*\\*? ?");
 	private static final Pattern endCommentRE = Pattern.compile("\\*/$");
 
-	private static String cleanComment(Reader comment) {
+	private static String cleanComment(Reader comment, int complianceLevel) {
 		StringBuilder ret = new StringBuilder();
 		try (BufferedReader br = new BufferedReader(comment)) {
 			String line = br.readLine();
@@ -639,7 +638,10 @@ public class JDTCommentBuilder {
 				return ret.toString();
 			}
 			boolean isLastLine = false;
-			if (line.length() >= 2 && line.charAt(1) == '/') {
+			if (complianceLevel >= 23 && line.length() >= 3 && line.charAt(1) == '/' && line.charAt(2) == '/') {
+				// From JDK 23, /// starting lines are Markdown documentation
+				line = line.substring(3);
+			} else if (line.length() >= 2 && line.charAt(1) == '/') {
 				//it is single line comment, which starts with "//"
 				isLastLine = true;
 				line = line.substring(2);

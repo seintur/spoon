@@ -32,6 +32,7 @@ class MarkdownCommentTest {
 		assertThat(ctClass.getMethodsByName("next").get(0)).getComments().hasSize(1);
 		CtComment ctComment = ctClass.getMethodsByName("next").get(0).getComments().get(0);
 		assertThat(ctComment).getCommentType().isEqualTo(CtComment.CommentType.MARKDOWN);
+		assertThat(ctComment.asJavaDoc()).getTags().hasSize(2);
 		assertEquals(CODE, ctClass.toString());
 	}
 

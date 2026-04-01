@@ -122,7 +122,7 @@ public class CtJavaDocImpl extends CtCommentImpl implements CtJavaDoc {
 		String currentTagContent = "";
 		CtJavaDocTag.TagType currentTag = null;
 
-		javadoc = Javadoc.parse(cleanComment(content));
+		javadoc = Javadoc.parse(cleanComment(content, factory.getEnvironment().getComplianceLevel()));
 		for (JavadocBlockTag tag: javadoc.getBlockTags()) {
 			addTag(getFactory().createJavaDocTag(tag.getContent().toText(), CtJavaDocTag.TagType.tagFromName(tag.getTagName()), tag.getTagRealName()));
 		}
