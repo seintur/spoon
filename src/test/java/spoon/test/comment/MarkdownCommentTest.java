@@ -28,6 +28,7 @@ class MarkdownCommentTest {
 
 	@ModelTest(code = CODE, complianceLevel = 23)
 	void testMarkdownComment23OrLatter(@BySimpleName("MarkdownComment") CtClass<?> ctClass) {
+		// contract: starting with JDK 23 /// starting lines are Markdown documentation
 		assertThat(ctClass.getMethodsByName("next").get(0)).getComments().hasSize(1);
 		CtComment ctComment = ctClass.getMethodsByName("next").get(0).getComments().get(0);
 		assertThat(ctComment).getCommentType().isEqualTo(CtComment.CommentType.MARKDOWN);
@@ -36,6 +37,7 @@ class MarkdownCommentTest {
 
 	@ModelTest(code = CODE, complianceLevel = 22)
 	void testMarkdownCommentBefore23(@BySimpleName("MarkdownComment") CtClass<?> ctClass) {
+		// contract: prior to JDK 23 /// starting lines are inline comments
 		assertThat(ctClass.getMethodsByName("next").get(0)).getComments().hasSize(4);
 		List<CtComment> ctComments = ctClass.getMethodsByName("next").get(0).getComments();
 		for (var ctComment : ctComments) {
@@ -45,7 +47,7 @@ class MarkdownCommentTest {
 
 	@ModelTest(value = "src/test/java/spoon/test/comment/testclasses/WildComments.java", complianceLevel = 22)
 	void testWildComments(@BySimpleName("WildComments") CtClass<?> type) {
-		//contract: tests that value of comment is correct even for wild combinations of characters. See WildComments class for details
+		// contract: tests that value of comment is correct even for wild combinations of characters. See WildComments class for details
 		List<CtLiteral<String>> literals = (List) ((CtNewArray<?>) type.getField("comments").getDefaultExpression()).getElements();
 		assertTrue(literals.size() > 10);
 		/*
