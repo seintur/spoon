@@ -131,7 +131,7 @@ public class JDTCommentBuilder {
 				&& contents[start+1] == '/'
 				&& contents[start+2] == '/') {
 				comment = factory.Core().createMarkdownComment();
-				start += 3;
+				start += 1;
 			}
 			else {
 				comment = factory.Core().createJavaDoc();

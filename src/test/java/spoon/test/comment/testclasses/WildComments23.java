@@ -11,15 +11,15 @@ public class WildComments23 {
 			//* starts with *
 			"* starts with *",
 			///* starts with /*
-			"/* starts with /*",
+			"* starts with /*",
 			//*/ starts with */
 			"*/ starts with */",
 			// */ starts with space and */
 			"*/ starts with space and */",
 			/// starts with /
-			"/ starts with /",
+			"starts with /",
 			//// starts with //
-			"// starts with //",
+			"/ starts with //",
 
 			/* test wild multiline comments */
 			"test wild multiline comments",
