@@ -128,10 +128,11 @@ public class JDTCommentBuilder {
 		if (end <= 0) {
 			// Prior to 23 /// starting lines are not considered as Markdown comments
 			if (factory.getEnvironment().getComplianceLevel() >= 23
+				&& start+2 < contents.length
 				&& contents[start+1] == '/'
 				&& contents[start+2] == '/') {
 				comment = factory.Core().createMarkdownComment();
-				start += 1;
+				start++;
 			}
 			else {
 				comment = factory.Core().createJavaDoc();
