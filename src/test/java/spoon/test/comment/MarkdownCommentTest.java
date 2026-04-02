@@ -16,32 +16,34 @@ import static spoon.testing.assertions.SpoonAssertions.assertThat;
 class MarkdownCommentTest {
 
 	final static private String SIMPLE_CODE_WITH_MARKDOWN_DOCUMENTATION = """
-		class MarkdownComment {
+		class MarkdownCommentClass {
 		    /// A Markdown comment
 		    ///
 		    /// @param i an integer
-		    /// @return the next integer
-		    int next(int i) {
-		        return i + 1;
+		    /// @param j another integer
+		    /// @return the sum of the two specified integers
+		    int add(int i, int j) {
+		        return i + j;
 		    }
 		}""";
 
 	@ModelTest(code = SIMPLE_CODE_WITH_MARKDOWN_DOCUMENTATION, complianceLevel = 23)
-	void testMarkdownComment23OrLatter(@BySimpleName("MarkdownComment") CtClass<?> ctClass) {
+	void testMarkdownComment23OrLatter(@BySimpleName("MarkdownCommentClass") CtClass<?> ctClass) {
 		// contract: starting with JDK 23 /// starting lines are Markdown documentation
-		assertThat(ctClass.getMethodsByName("next").get(0)).getComments().hasSize(1);
-		CtComment ctComment = ctClass.getMethodsByName("next").get(0).getComments().get(0);
+		assertThat(ctClass.getMethodsByName("add").get(0)).getComments().hasSize(1);
+		CtComment ctComment = ctClass.getMethodsByName("add").get(0).getComments().get(0);
 		assertThat(ctComment).getCommentType().isEqualTo(CtComment.CommentType.MARKDOWN);
-		assertThat(ctComment.asJavaDoc()).getTags().hasSize(2);
+		assertThat(ctComment.asJavaDoc()).getTags().hasSize(3);
 		assertThat(ctComment.asJavaDoc().getTags().get(0)).getType().isEqualTo(CtJavaDocTag.TagType.PARAM);
-		assertThat(ctComment.asJavaDoc().getTags().get(1)).getType().isEqualTo(CtJavaDocTag.TagType.RETURN);
+		assertThat(ctComment.asJavaDoc().getTags().get(1)).getType().isEqualTo(CtJavaDocTag.TagType.PARAM);
+		assertThat(ctComment.asJavaDoc().getTags().get(2)).getType().isEqualTo(CtJavaDocTag.TagType.RETURN);
 	}
 
 	@ModelTest(code = SIMPLE_CODE_WITH_MARKDOWN_DOCUMENTATION, complianceLevel = 22)
-	void testMarkdownCommentBefore23(@BySimpleName("MarkdownComment") CtClass<?> ctClass) {
+	void testMarkdownCommentBefore23(@BySimpleName("MarkdownCommentClass") CtClass<?> ctClass) {
 		// contract: prior to JDK 23 /// starting lines are inline comments
-		assertThat(ctClass.getMethodsByName("next").get(0)).getComments().hasSize(4);
-		List<CtComment> ctComments = ctClass.getMethodsByName("next").get(0).getComments();
+		assertThat(ctClass.getMethodsByName("add").get(0)).getComments().hasSize(5);
+		List<CtComment> ctComments = ctClass.getMethodsByName("add").get(0).getComments();
 		for (var ctComment : ctComments) {
 			assertThat(ctComment).getCommentType().isEqualTo(CtComment.CommentType.INLINE);
 		}
