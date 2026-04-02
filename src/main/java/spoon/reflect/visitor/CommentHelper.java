@@ -8,6 +8,7 @@
 package spoon.reflect.visitor;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -76,7 +77,7 @@ public class CommentHelper {
 				// per line suffix
 					printCommentContent(printer, comment, s -> (" * " + s).replaceAll(" *$", ""));
 			case MARKDOWN ->
-				printCommentContent(printer, comment, s -> DefaultJavaPrettyPrinter.MARKDOWN_START + s);
+				printCommentContent(printer, comment, s -> s);
 		}
 		// suffix
 		switch (commentType) {
@@ -93,9 +94,14 @@ public class CommentHelper {
 	}
 
 	static void printCommentContent(PrinterHelper printer, CtComment comment, Function<String, String> transfo) {
-		CtComment.CommentType commentType = comment.getCommentType();
-		String content = comment.getContent();
 
+		CtComment.CommentType commentType = comment.getCommentType();
+		if (commentType == CtComment.CommentType.MARKDOWN) {
+			printMarkdownCommentContent(printer, comment);
+			return;
+		}
+
+		String content = comment.getContent();
 		content.lines().forEach(line -> {
 			if (commentType == CtComment.CommentType.BLOCK) {
 				printer.write(transfo.apply(line));
@@ -140,5 +146,48 @@ public class CommentHelper {
 			}
 			printer.write(com.trim()).writeln();
 		});
+	}
+
+	private static void printMarkdownCommentContent(PrinterHelper printer, CtComment comment) {
+
+		String content = comment.getContent();
+		Iterator<String> iterator = content.lines().iterator();
+		if (iterator.hasNext()) {
+			String line = iterator.next();
+			printer.write(DefaultJavaPrettyPrinter.MARKDOWN_START);
+			printer.write(line);
+			while (iterator.hasNext()) {
+				line = iterator.next();
+				printer.writeln();
+				printer.write(DefaultJavaPrettyPrinter.MARKDOWN_START);
+				printer.write(line);
+			}
+		}
+
+		Collection<CtJavaDocTag> javaDocTags = ((CtJavaDoc) comment).getTags();
+		if (javaDocTags != null && !javaDocTags.isEmpty()) {
+			printer.writeln();
+			printer.write(DefaultJavaPrettyPrinter.MARKDOWN_START);
+			for (CtJavaDocTag docTag : javaDocTags) {
+				printer.writeln();
+				printer.write(DefaultJavaPrettyPrinter.MARKDOWN_START);
+				printer.write(CtJavaDocTag.JAVADOC_TAG_PREFIX);
+				printer.write(CtJavaDocTag.TagType.UNKNOWN.getName().equalsIgnoreCase(docTag.getType().name()) ? docTag.getRealName() : docTag.getType().getName().toLowerCase());
+				if (docTag.getType().hasParam()) {
+					printer.write(" ");
+					printer.write(docTag.getParam());
+				}
+				iterator = docTag.getContent().lines().iterator();
+				while (iterator.hasNext()) {
+					String line = iterator.next();
+					printer.writeln();
+					printer.write(DefaultJavaPrettyPrinter.MARKDOWN_START);
+					if (docTag.getType().hasParam()) {
+						printer.write("\t\t");
+					}
+					printer.write(line.trim());
+				}
+			}
+		}
 	}
 }

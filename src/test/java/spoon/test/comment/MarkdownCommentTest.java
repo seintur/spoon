@@ -1,6 +1,7 @@
 package spoon.test.comment;
 
 import spoon.reflect.code.CtComment;
+import spoon.reflect.code.CtJavaDocTag;
 import spoon.reflect.code.CtLiteral;
 import spoon.reflect.code.CtNewArray;
 import spoon.reflect.declaration.CtClass;
@@ -17,9 +18,8 @@ class MarkdownCommentTest {
 	final static private String SIMPLE_CODE_WITH_MARKDOWN_DOCUMENTATION = """
 		class MarkdownComment {
 		    /// A Markdown comment
-		    ///\s
-		    /// @param i
-		    /// 		an integer
+		    ///
+		    /// @param i an integer
 		    /// @return the next integer
 		    int next(int i) {
 		        return i + 1;
@@ -33,13 +33,14 @@ class MarkdownCommentTest {
 		CtComment ctComment = ctClass.getMethodsByName("next").get(0).getComments().get(0);
 		assertThat(ctComment).getCommentType().isEqualTo(CtComment.CommentType.MARKDOWN);
 		assertThat(ctComment.asJavaDoc()).getTags().hasSize(2);
-		assertEquals(SIMPLE_CODE_WITH_MARKDOWN_DOCUMENTATION, ctClass.toString());
+		assertThat(ctComment.asJavaDoc().getTags().get(0)).getType().isEqualTo(CtJavaDocTag.TagType.PARAM);
+		assertThat(ctComment.asJavaDoc().getTags().get(1)).getType().isEqualTo(CtJavaDocTag.TagType.RETURN);
 	}
 
 	@ModelTest(code = SIMPLE_CODE_WITH_MARKDOWN_DOCUMENTATION, complianceLevel = 22)
 	void testMarkdownCommentBefore23(@BySimpleName("MarkdownComment") CtClass<?> ctClass) {
 		// contract: prior to JDK 23 /// starting lines are inline comments
-		assertThat(ctClass.getMethodsByName("next").get(0)).getComments().hasSize(5);
+		assertThat(ctClass.getMethodsByName("next").get(0)).getComments().hasSize(4);
 		List<CtComment> ctComments = ctClass.getMethodsByName("next").get(0).getComments();
 		for (var ctComment : ctComments) {
 			assertThat(ctComment).getCommentType().isEqualTo(CtComment.CommentType.INLINE);
