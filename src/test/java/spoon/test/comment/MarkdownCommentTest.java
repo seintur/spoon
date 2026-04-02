@@ -15,7 +15,7 @@ import static spoon.testing.assertions.SpoonAssertions.assertThat;
 
 class MarkdownCommentTest {
 
-	final static private String CODE = """
+	final static private String SIMPLE_CODE_WITH_MARKDOWN_DOCUMENTATION = """
 		class MarkdownComment {
 		    /// A Markdown comment
 		    ///
@@ -26,17 +26,17 @@ class MarkdownCommentTest {
 		    }
 		}""";
 
-	@ModelTest(code = CODE, complianceLevel = 23)
+	@ModelTest(code = SIMPLE_CODE_WITH_MARKDOWN_DOCUMENTATION, complianceLevel = 23)
 	void testMarkdownComment23OrLatter(@BySimpleName("MarkdownComment") CtClass<?> ctClass) {
 		// contract: starting with JDK 23 /// starting lines are Markdown documentation
 		assertThat(ctClass.getMethodsByName("next").get(0)).getComments().hasSize(1);
 		CtComment ctComment = ctClass.getMethodsByName("next").get(0).getComments().get(0);
 		assertThat(ctComment).getCommentType().isEqualTo(CtComment.CommentType.MARKDOWN);
 		assertThat(ctComment.asJavaDoc()).getTags().hasSize(2);
-		assertEquals(CODE, ctClass.toString());
+		assertEquals(SIMPLE_CODE_WITH_MARKDOWN_DOCUMENTATION, ctClass.toString());
 	}
 
-	@ModelTest(code = CODE, complianceLevel = 22)
+	@ModelTest(code = SIMPLE_CODE_WITH_MARKDOWN_DOCUMENTATION, complianceLevel = 22)
 	void testMarkdownCommentBefore23(@BySimpleName("MarkdownComment") CtClass<?> ctClass) {
 		// contract: prior to JDK 23 /// starting lines are inline comments
 		assertThat(ctClass.getMethodsByName("next").get(0)).getComments().hasSize(4);
@@ -48,12 +48,9 @@ class MarkdownCommentTest {
 
 	@ModelTest(value = "src/test/java/spoon/test/comment/testclasses/WildComments23.java", complianceLevel = 23)
 	void testWildComments23OrLatter(@BySimpleName("WildComments23") CtClass<?> type) {
-		// contract: tests that value of comment is correct even for wild combinations of characters. See WildComments class for details
+		// contract: tests that value of comment is correct even for wild combinations of characters starting with JDK 23
 		List<CtLiteral<String>> literals = (List) ((CtNewArray<?>) type.getField("comments").getDefaultExpression()).getElements();
-		assertTrue(literals.size() > 10);
-		/*
-		 * each string literal has a comment and string value, which defines expected value of its comment
-		 */
+		assertEquals(43, literals.size());
 		for (CtLiteral<String> literal : literals) {
 			assertEquals(1, literal.getComments().size());
 			CtComment comment = literal.getComments().get(0);
@@ -64,12 +61,9 @@ class MarkdownCommentTest {
 
 	@ModelTest(value = "src/test/java/spoon/test/comment/testclasses/WildComments.java", complianceLevel = 22)
 	void testWildComments(@BySimpleName("WildComments") CtClass<?> type) {
-		// contract: tests that value of comment is correct even for wild combinations of characters. See WildComments class for details
+		// contract: tests that value of comment is correct even for wild combinations of characters before JDK 23
 		List<CtLiteral<String>> literals = (List) ((CtNewArray<?>) type.getField("comments").getDefaultExpression()).getElements();
-		assertTrue(literals.size() > 10);
-		/*
-		 * each string literal has a comment and string value, which defines expected value of its comment
-		 */
+		assertEquals(43, literals.size());
 		for (CtLiteral<String> literal : literals) {
 			assertEquals(1, literal.getComments().size());
 			CtComment comment = literal.getComments().get(0);
