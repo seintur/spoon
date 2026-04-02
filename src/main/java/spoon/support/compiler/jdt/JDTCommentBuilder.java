@@ -641,6 +641,8 @@ public class JDTCommentBuilder {
 			if (complianceLevel >= 23 && line.length() >= 3 && line.charAt(1) == '/' && line.charAt(2) == '/') {
 				// From JDK 23, /// starting lines are Markdown documentation
 				line = line.substring(3);
+				ret.append(line);
+				return cleanMarkdownComment(br, ret);
 			} else if (line.length() >= 2 && line.charAt(1) == '/') {
 				//it is single line comment, which starts with "//"
 				isLastLine = true;
@@ -674,5 +676,17 @@ public class JDTCommentBuilder {
 		} catch (IOException e) {
 			throw new SpoonException(e);
 		}
+	}
+
+	private static final Pattern markdownCommentRE = Pattern.compile("^[ \t]*/// ?");
+
+	private static String cleanMarkdownComment(BufferedReader br, StringBuilder ret) throws IOException {
+		String line;
+		while ((line = br.readLine()) != null) {
+			line = markdownCommentRE.matcher(line).replaceFirst("");
+			ret.append(CtComment.LINE_SEPARATOR);
+			ret.append(line);
+		}
+		return ret.toString().trim();
 	}
 }
