@@ -10,7 +10,6 @@ import spoon.testing.utils.ModelTest;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static spoon.testing.assertions.SpoonAssertions.assertThat;
 
 class MarkdownCommentTest {
