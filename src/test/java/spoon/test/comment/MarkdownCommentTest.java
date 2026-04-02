@@ -17,9 +17,10 @@ class MarkdownCommentTest {
 	final static private String SIMPLE_CODE_WITH_MARKDOWN_DOCUMENTATION = """
 		class MarkdownComment {
 		    /// A Markdown comment
-		    ///
-		    /// @param i an integer
-		    /// @return  the next integer
+		    ///\s
+		    /// @param i
+		    /// 		an integer
+		    /// @return the next integer
 		    int next(int i) {
 		        return i + 1;
 		    }
@@ -38,7 +39,7 @@ class MarkdownCommentTest {
 	@ModelTest(code = SIMPLE_CODE_WITH_MARKDOWN_DOCUMENTATION, complianceLevel = 22)
 	void testMarkdownCommentBefore23(@BySimpleName("MarkdownComment") CtClass<?> ctClass) {
 		// contract: prior to JDK 23 /// starting lines are inline comments
-		assertThat(ctClass.getMethodsByName("next").get(0)).getComments().hasSize(4);
+		assertThat(ctClass.getMethodsByName("next").get(0)).getComments().hasSize(5);
 		List<CtComment> ctComments = ctClass.getMethodsByName("next").get(0).getComments();
 		for (var ctComment : ctComments) {
 			assertThat(ctComment).getCommentType().isEqualTo(CtComment.CommentType.INLINE);
