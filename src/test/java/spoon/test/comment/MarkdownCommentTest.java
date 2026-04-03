@@ -15,20 +15,8 @@ import static spoon.testing.assertions.SpoonAssertions.assertThat;
 
 class MarkdownCommentTest {
 
-	final static private String SIMPLE_CODE_WITH_MARKDOWN_DOCUMENTATION = """
-		class MarkdownCommentClass {
-		    /// A Markdown comment
-		    ///
-		    /// @param i an integer
-		    /// @param j another integer
-		    /// @return the sum of the two specified integers
-		    int add(int i, int j) {
-		        return i + j;
-		    }
-		}""";
-
-	@ModelTest(code = SIMPLE_CODE_WITH_MARKDOWN_DOCUMENTATION, complianceLevel = 23)
-	void testMarkdownComment23OrLatter(@BySimpleName("MarkdownCommentClass") CtClass<?> ctClass) {
+	@ModelTest(value = "src/test/resources/comment/MarkdownComment.java", complianceLevel = 23)
+	void testMarkdownComments(@BySimpleName("MarkdownComment") CtClass<?> ctClass) {
 		// contract: starting with JDK 23 /// starting lines are Markdown documentation
 		assertThat(ctClass.getMethodsByName("add").get(0)).getComments().hasSize(1);
 		CtComment ctComment = ctClass.getMethodsByName("add").get(0).getComments().get(0);
@@ -39,15 +27,22 @@ class MarkdownCommentTest {
 		assertThat(ctComment.asJavaDoc().getTags().get(2)).getType().isEqualTo(CtJavaDocTag.TagType.RETURN);
 	}
 
-	@ModelTest(code = SIMPLE_CODE_WITH_MARKDOWN_DOCUMENTATION, complianceLevel = 22)
-	void testMarkdownCommentBefore23(@BySimpleName("MarkdownCommentClass") CtClass<?> ctClass) {
+	@ModelTest(value = "src/test/resources/comment/MarkdownComment.java", complianceLevel = 22)
+	void testMarkdownCommentBefore23(@BySimpleName("MarkdownComment") CtClass<?> ctClass) {
 		// contract: prior to JDK 23 /// starting lines are inline comments
-		assertThat(ctClass.getMethodsByName("add").get(0)).getComments().hasSize(5);
+		assertThat(ctClass.getMethodsByName("add").get(0)).getComments().hasSize(6);
 		List<CtComment> ctComments = ctClass.getMethodsByName("add").get(0).getComments();
 		for (var ctComment : ctComments) {
 			assertThat(ctComment).getCommentType().isEqualTo(CtComment.CommentType.INLINE);
 		}
 	}
+
+	/*
+	 * With JDK >= 23 testWildComments() in CommentTest fails, since /// starting lines are interpreted as Markdown
+	 * documentation, and no longer as inline comments. The following two methods can replace testWildComments() in
+	 * CommentTest as they provide the same test, respectively with compliance levels 23 and 22, and with the correct
+	 * interpretation of /// starting lines.
+	 */
 
 	@ModelTest(value = "src/test/java/spoon/test/comment/testclasses/WildComments23.java", complianceLevel = 23)
 	void testWildComments23OrLatter(@BySimpleName("WildComments23") CtClass<?> type) {
